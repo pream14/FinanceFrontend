@@ -9,10 +9,14 @@ const FinanceEntryPage = () => {
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [amounts, setAmounts] = useState({});
   const [today, setToday] = useState('');
+  const [previousAmount, setPreviousAmount] = useState(null);
+  const [transactionTypes, setTransactionTypes] = useState({});
   const [workerId, setWorkerId] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('');
+  const [isPreviousAmountLoaded, setIsPreviousAmountLoaded] = useState(false); // Flag to track if prev amount is fetched
+
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -32,9 +36,10 @@ const FinanceEntryPage = () => {
     };
 
     const fetchToday = () => {
-      const date = new Date();
-      const formattedDate = date.toISOString().split('T')[0];
+      const currentDate = new Date();
+      const formattedDate = currentDate.toLocaleDateString('en-CA'); // 'en-CA' formats as YYYY-MM-DD
       setToday(formattedDate);
+
     };
 
     const fetchWorkerId = async () => {
@@ -119,7 +124,12 @@ const FinanceEntryPage = () => {
       [`${customerId}-${today}`]: amount,
     }));
   };
-
+  const handleTransactionTypeChange = (customerId, value) => {
+    setTransactionTypes((prev) => ({
+      ...prev,
+      [customerId]: value,
+    }));
+  };
   const handleSave = async () => {
     try {
       const token = await AsyncStorage.getItem('access_token');
@@ -127,17 +137,30 @@ const FinanceEntryPage = () => {
         Alert.alert('Error', 'Worker ID token not found');
         return;
       }
-
-      const updates = Object.entries(amounts).map(([key, value]) => {
-        const [customerId] = key.split('-');
-        return {
-          worker_id: token,
-          customer_id: customerId,
-          amount_paid: value,
-          payment_status: value > 0 ? 'Paid' : 'Unpaid',
-        };
-      });
-
+  
+      const updates = await Promise.all(
+        Object.entries(amounts).map(async ([key, value]) => {
+          const [customerId] = key.split('-');
+          const paymentDate = today; // Assuming `today` is defined earlier in the component
+  
+          // Fetch previous amount for the specific customer and date
+          const previousAmount = await fetchPreviousAmountForCustomer(token, customerId, paymentDate);
+  
+          console.log("Customer ID:", customerId);
+          console.log("Previous Amount:", previousAmount);
+          console.log("Amount Paid:", value);
+  
+          return {
+            worker_id: token,
+            customer_id: customerId,
+            amount_paid: value,
+            previous_amount: previousAmount, // Include previous amount for corrections
+            payment_status: value > 0 ? 'Paid' : 'Unpaid',
+            payment_type: transactionTypes[customerId] || 'Payment',
+          };
+        })
+      );
+  
       const response = await fetch('http://192.168.151.233:5000/update_payment', {
         method: 'POST',
         headers: {
@@ -146,7 +169,8 @@ const FinanceEntryPage = () => {
         },
         body: JSON.stringify(updates),
       });
-
+      console.log(updates)
+  
       const data = await response.json();
       if (response.ok) {
         Alert.alert('Success', data.message || 'Payments updated successfully');
@@ -157,7 +181,34 @@ const FinanceEntryPage = () => {
       Alert.alert('Error', error.message || 'An error occurred');
     }
   };
-
+  
+  // Helper function to fetch the previous amount for a specific customer and date
+  const fetchPreviousAmountForCustomer = async (token, customerId, paymentDate) => {
+    try {
+      const response = await fetch(
+        `http://192.168.151.233:5000/get_previous_amount?customer_id=${customerId}&payment_date=${paymentDate}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const data = await response.json();
+      if (response.ok) {
+        return data.previous_amount || 0; // Default to 0 if no previous amount is found
+      } else {
+        console.error('Error fetching previous amount:', data.error);
+        return 0;
+      }
+    } catch (error) {
+      console.error('Error fetching previous amount:', error.message);
+      return 0;
+    }
+  };
+  
   const calculateTotal = () => {
     return Object.values(amounts).reduce((sum, amount) => sum + amount, 0);
   };
@@ -187,8 +238,9 @@ const FinanceEntryPage = () => {
       {/* Table Header */}
       <View style={styles.headerRow}>
         <Text style={[styles.fixedCell, styles.headerCell]}>Customer</Text>
-        <Text style={[styles.fixedCell, styles.headerCell]}>Phone</Text>
+        {/* <Text style={[styles.fixedCell, styles.headerCell]}>Phone</Text> */}
         <Text style={[styles.fixedCell, styles.headerCell]}>{today}</Text>
+        <Text style={[styles.fixedCell, styles.headerCell]}>Options</Text>
       </View>
 
       {/* Customer List */}
@@ -198,7 +250,7 @@ const FinanceEntryPage = () => {
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Text style={styles.fixedCell}>{item.name}</Text>
-            <Text style={styles.fixedCell}>{item.contact_number}</Text>
+            {/* <Text style={styles.fixedCell}>{item.contact_number}</Text> */}
             <TextInput
               style={[styles.cellInput, { textAlign: 'center' }]}
               keyboardType="numeric"
@@ -206,6 +258,16 @@ const FinanceEntryPage = () => {
               value={String(amounts[`${item.contact_number}-${today}`] || '')}
               onChangeText={(value) => handleAmountChange(item.contact_number, value)}
             />
+            <Picker
+              style={styles.picker}
+              selectedValue={transactionTypes[item.contact_number] || 'Payment'} // Use contact_number for consistency
+              onValueChange={(value) => handleTransactionTypeChange(item.contact_number, value)} // Use contact_number
+            >
+              <Picker.Item label="Payment" value="Payment" />
+              <Picker.Item label="Correction" value="Correction" />
+              <Picker.Item label="Adjustment" value="Addition" />
+            </Picker>
+
           </View>
         )}
       />
