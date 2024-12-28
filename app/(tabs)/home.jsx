@@ -22,6 +22,12 @@ const HomePage = () => {
       >
         <Text style={styles.buttonText}>Entry by me</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('History')} // Navigate to FinanceEntryPage
+      >
+        <Text style={styles.buttonText}>history</Text>
+      </TouchableOpacity>
     </View>
   );
 };

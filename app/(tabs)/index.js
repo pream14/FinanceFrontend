@@ -7,6 +7,7 @@ import HomeScreen from './home';
 import LoginScreen from './login';
 import Entry from './entry';
 import Workerentry from './workerentry';
+import History from './history';
 
 // Create a Stack Navigator
 const Stack = createStackNavigator();
@@ -38,6 +39,7 @@ export default function App() {
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Entry" component={Entry} />
       <Stack.Screen name="Workerentry" component={Workerentry} />
+      <Stack.Screen name="History" component={History} />
     </Stack.Navigator>
   );
 }
