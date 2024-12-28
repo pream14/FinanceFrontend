@@ -116,6 +116,8 @@ const FinanceEntryPage = () => {
     }
   }, [customers, today]);
 
+ 
+
 
   const handleAmountChange = (customerId, value) => {
     const amount = value ? parseInt(value, 10) : 0;
@@ -130,6 +132,19 @@ const FinanceEntryPage = () => {
       [customerId]: value,
     }));
   };
+
+  const getPaymentTypeColor = (type) => {
+    switch (type) {
+      case 'Payment':
+        return '#d4edda'; // Light green
+      case 'Addition':
+        return '#fff3cd'; // Light yellow
+      default:
+        return '#f7f7f7'; // Default light background
+    }
+  };
+
+
   const handleSave = async () => {
     try {
       const token = await AsyncStorage.getItem('access_token');
@@ -248,7 +263,15 @@ const FinanceEntryPage = () => {
         data={filteredCustomers}
         keyExtractor={(item, index) => `${item.customer_id}-${index}`}
         renderItem={({ item }) => (
-          <View style={styles.row}>
+          <View style={[
+            styles.row,
+            {
+              backgroundColor: getPaymentTypeColor(
+                transactionTypes[item.contact_number] || 'Payment'
+              ),
+            },
+          ]}
+        >
             <Text style={styles.fixedCell}>{item.name}</Text>
             {/* <Text style={styles.fixedCell}>{item.contact_number}</Text> */}
             <TextInput
@@ -264,8 +287,7 @@ const FinanceEntryPage = () => {
               onValueChange={(value) => handleTransactionTypeChange(item.contact_number, value)} // Use contact_number
             >
               <Picker.Item label="Payment" value="Payment" />
-              <Picker.Item label="Correction" value="Correction" />
-              <Picker.Item label="Adjustment" value="Addition" />
+              <Picker.Item label="Addition" value="Addition" />
             </Picker>
 
           </View>
