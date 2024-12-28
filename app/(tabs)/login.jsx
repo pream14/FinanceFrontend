@@ -35,7 +35,7 @@ const Login = ({ navigation }) => {
         await AsyncStorage.setItem('access_token', data.access_token);
         await AsyncStorage.setItem('role',data. role);
         await AsyncStorage.setItem('username', data.username);
-        navigation.navigate('Entry');
+        navigation.navigate('Home');
       } else {
         setErrorMessage(data.error || 'Invalid user ID or password');
       }

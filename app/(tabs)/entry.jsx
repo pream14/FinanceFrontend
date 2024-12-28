@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FinanceEntryPage = () => {
   const [customers, setCustomers] = useState([]);
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [amounts, setAmounts] = useState({});
   const [today, setToday] = useState('');
@@ -228,6 +229,45 @@ const FinanceEntryPage = () => {
     return Object.values(amounts).reduce((sum, amount) => sum + amount, 0);
   };
 
+  const fetchPaymentsbyworker = async (date) => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      if (!token) {
+        Alert.alert('Error', 'Worker ID token not found');
+        return;
+      }
+
+      const response = await fetch(
+        `http://192.168.151.233:5000/get_entries_by_worker?payment_date=${date}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch payments');
+      }
+
+      const data = await response.json();
+      setPayments(data.payments || []);
+      setError('');
+    } catch (err) {
+      console.error('Error fetching payments:', err.message);
+      setError(err.message || 'Error fetching payments');
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleDateChange = (date) => {
+    setPaymentDate(date);
+    fetchPaymentsbyworker(date);
+  };
+
   return (
     <View style={styles.container}>
       {/* Search and Filter */}
@@ -303,6 +343,7 @@ const FinanceEntryPage = () => {
       <TouchableOpacity style={styles.button} onPress={handleSave}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
+      
     </View>
   );
 };

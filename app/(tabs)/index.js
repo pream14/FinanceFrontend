@@ -6,6 +6,7 @@ import { View, Text } from 'react-native';
 import HomeScreen from './home';
 import LoginScreen from './login';
 import Entry from './entry';
+import Workerentry from './workerentry';
 
 // Create a Stack Navigator
 const Stack = createStackNavigator();
@@ -36,6 +37,7 @@ export default function App() {
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Entry" component={Entry} />
+      <Stack.Screen name="Workerentry" component={Workerentry} />
     </Stack.Navigator>
   );
 }

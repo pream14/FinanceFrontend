@@ -1,52 +1,27 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // Import navigation hook
 
-const HomeScreen = ({ navigation }) => {
-
-  // Sample navigation functions for the buttons (to be connected to actual screens later)
-  const navigateToCustomerDetails = () => {
-    navigation.navigate('CustomerDetails');
-  };
-
-  const navigateToSettings = () => {
-    navigation.navigate('Settings');
-  };
+const HomePage = () => {
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Welcome to Finance Manager</Text>
-      </View>
+      <Text style={styles.title}>Welcome to Finance Management</Text>
 
-      <View style={styles.overviewContainer}>
-        <Text style={styles.overviewText}>Overview</Text>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Daily Payments</Text>
-          <Text style={styles.cardAmount}>$1200</Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Monthly Payments</Text>
-          <Text style={styles.cardAmount}>$5000</Text>
-        </View>
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={navigateToCustomerDetails}
-        >
-          <Text style={styles.buttonText}>Customer Details</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={styles.button}
-          onPress={navigateToSettings}
-        >
-          <Text style={styles.buttonText}>Settings</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Button to go to Finance Entry Page */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Entry')} // Navigate to FinanceEntryPage
+      >
+        <Text style={styles.buttonText}>Go to Finance Entry</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Workerentry')} // Navigate to FinanceEntryPage
+      >
+        <Text style={styles.buttonText}>Entry by me</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -54,61 +29,28 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    marginTop: 40,
-    marginBottom: 40,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f9f9f9',
   },
-  headerText: {
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-  },
-  overviewContainer: {
-    marginBottom: 40,
-  },
-  overviewText: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 20,
-    color: '#333',
-  },
-  card: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 8,
-    elevation: 5,
-    marginBottom: 20,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  cardAmount: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginTop: 10,
-  },
-  buttonContainer: {
-    marginTop: 20,
+    marginBottom: 30,
+    color: '#2980b9',
   },
   button: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#2980b9',
     paddingVertical: 15,
+    paddingHorizontal: 40,
     borderRadius: 8,
     marginBottom: 10,
-    alignItems: 'center',
   },
   buttonText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
 });
 
-export default HomeScreen;
+export default HomePage;
