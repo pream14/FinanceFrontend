@@ -98,7 +98,9 @@ const PaymentHistory = () => {
         
         <View style={styles.table}>
         <Text style={styles.tablehe}>Customer: {payments[0].customer_name}</Text>
-        <Text style={styles.tableh}>Number: {payments[0].customer_id}</Text>
+        <Text style={styles.tablehe}>Number: {payments[0].customer_id}</Text>
+        <Text style={styles.tablehe}>Amount: {payments[0].loan_amount}</Text>
+        <Text style={styles.tableh}>Balance: {payments[0].balance}</Text>
           {/* Table Heading */}
           <View style={styles.tableRow}>
             <Text style={styles.tableHeader}>Date</Text>
